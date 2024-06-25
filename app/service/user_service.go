@@ -68,3 +68,34 @@ func (u UserServiceImpl) Add(c *gin.Context) {
 
 	c.JSON(http.StatusOK, pkg.BuildResponse("00", constant.Success, user))
 }
+
+func (u UserServiceImpl) Update(c *gin.Context) {
+	log.Info("add user")
+	var user entity.User
+
+	if err := c.ShouldBindJSON(&user); err != nil {
+		log.Info("mapping addUserRequest fail")
+	}
+
+	hash, _ := bcrypt.GenerateFromPassword([]byte(user.Password), 15)
+	user.Password = string(hash)
+
+	user, err := u.userRepository.Save(&user)
+	if err != nil {
+		log.Info("Save user fail")
+	}
+
+	c.JSON(http.StatusOK, pkg.BuildResponse("00", constant.Success, user))
+
+}
+
+func (u UserServiceImpl) DeleteById(c *gin.Context) {
+	log.Info("delete user by id")
+	userId, _ := strconv.Atoi(c.Param("id"))
+	err := u.userRepository.DeleteById(userId)
+	if err != nil {
+		log.Info("delete user by id fail")
+	}
+
+	c.JSON(http.StatusOK, pkg.BuildResponse("00", constant.Success, ""))
+}
